@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UWAY — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0edf8;--white:#fff;--border:#e8e2f5;
+  --purple:#5a26a8;--purple-d:#421a7d;--purple-s:#6d3ad2;--purple-xs:#f0eafb;
+  --gold:#c9a84c;--gold-l:#e8d28a;
+  --text:#1a1230;--muted:#8b80a8;
+  --green:#16a34a;--green-bg:#dcfce7;
+  --red:#dc2626;--red-bg:#fee2e2;
+  --amber:#d97706;--amber-bg:#fef3c7;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --sidebar:#1e0e3a;--sidebar-d:#110820;
+  --r:10px;--sh:0 1px 8px rgba(90,38,168,.09)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden}
+
+/* MOBILE NAV OVERLAY */
+.mobile-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998; opacity:0; pointer-events:none; transition:.3s; }
+#mobile-nav-toggle:checked ~ .mobile-overlay { opacity:1; pointer-events:auto; }
+#mobile-nav-toggle:checked ~ .sb { transform:translateX(0); }
+.hamburger-btn { display:none; align-items:center; justify-content:center; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--white); cursor:pointer; color:var(--text); transition:.15s; flex-shrink:0; }
+.hamburger-btn:hover { background:var(--bg); }
+
+.sb{width:220px;background:linear-gradient(175deg,var(--sidebar) 0%,var(--sidebar-d) 100%);display:flex;flex-direction:column;flex-shrink:0;height:100vh;position:sticky;top:0}
+.sb-brand{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+.sb-mark{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),var(--gold-l));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-name{font-family:'Outfit',sans-serif;font-weight:900;font-size:20px;letter-spacing:3px;background:linear-gradient(120deg,var(--gold),var(--gold-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-sub{font-size:9.5px;color:rgba(255,255,255,.28);letter-spacing:1.5px;text-transform:uppercase}
+
+.sb-user{margin:14px 16px;padding:12px 13px;background:rgba(201,168,76,.09);border:1px solid rgba(201,168,76,.2);border-radius:10px;display:flex;align-items:center;gap:10px}
+.sb-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:13px;color:#2a1650;flex-shrink:0}
+.sb-uname{font-size:13px;font-weight:600;color:var(--gold-l);line-height:1.2}
+.sb-role{font-size:10.5px;color:rgba(255,255,255,.35);margin-top:1px}
+
+.sb-nav{padding:8px 12px;flex:1;overflow-y:auto}
+.sb-nav-section{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:0 8px;margin:14px 0 5px;font-weight:700}
+.sb-nav ul{list-style:none}
+.sb-nav li{margin-bottom:1px}
+.sb-nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:rgba(255,255,255,.45);font-size:13px;font-weight:500;transition:.15s;text-decoration:none}
+.sb-nav a:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.sb-nav a.active{background:linear-gradient(115deg,var(--gold),var(--gold-l));color:#2a1650;font-weight:700}
+.sb-nav a svg{flex-shrink:0;opacity:.7}
+.sb-nav a.active svg{opacity:1}
+.nb{margin-left:auto;background:var(--red);color:#fff;font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700;line-height:1.4}
+
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-logout{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;color:rgba(255,255,255,.35);font-size:13px;cursor:pointer;transition:.15s;text-decoration:none}
+.sb-logout:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.7)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--white);height:58px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:10}
+.topbar-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:11px}
+.live-badge{display:flex;align-items:center;gap:5px;background:var(--green-bg);color:var(--green);padding:4px 11px;border-radius:999px;font-size:12px;font-weight:700}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.content{flex:1;padding:22px 26px 36px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s;white-space:nowrap}
+.btn-primary{background:linear-gradient(120deg,var(--purple-d),var(--purple-s));color:#fff}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(90,38,168,.28)}
+.btn-outline{background:transparent;color:var(--purple);border:1.5px solid var(--purple)}
+.btn-outline:hover{background:var(--purple-xs)}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+.btn-ghost:hover{color:var(--purple);border-color:var(--purple)}
+.btn-red{background:var(--red-bg);color:var(--red);border:1.5px solid #fca5a5}
+.btn-red:hover{background:var(--red);color:#fff}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border:1.5px solid #fcd34d}
+.btn-amber:hover{background:var(--amber);color:#fff}
+.btn-green{background:var(--green-bg);color:var(--green);border:1.5px solid #86efac}
+.btn-green:hover{background:var(--green);color:#fff}
+.btn-gold{background:linear-gradient(120deg,var(--gold),var(--gold-l));color:#2a1650;font-weight:700}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11.5px}
+
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);overflow:hidden;margin-bottom:18px}
+.card-hd{padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap}
+.card-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:var(--text)}
+.card-body{padding:16px 18px}
+
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;display:block}
+.pill-green{background:var(--green-bg);color:var(--green)}
+.pill-amber{background:var(--amber-bg);color:var(--amber)}
+.pill-red{background:var(--red-bg);color:var(--red)}
+.pill-purple{background:var(--purple-xs);color:var(--purple)}
+.pill-grey{background:#f0ecfa;color:var(--muted)}
+.pill-blue{background:var(--blue-bg);color:var(--blue)}
+
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.fi,.fs{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;outline:none;color:var(--text);transition:.15s;background:var(--white)}
+.fi:focus,.fs:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(90,38,168,.08)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--sh);border:1px solid var(--border)}
+.sc-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.sc-v{font-family:'Outfit',sans-serif;font-size:26px;font-weight:900;color:var(--text);line-height:1}
+.sc-l{font-size:11px;color:var(--muted);margin-top:3px}
+.sc-n{font-size:11px;font-weight:600;margin-top:5px}
+.up{color:var(--green)}.down{color:var(--red)}.warn{color:var(--amber)}
+
+.t{width:100%;border-collapse:collapse;font-size:12.5px}
+.t th{padding:9px 14px;text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);background:#f8f6fc;border-bottom:1px solid var(--border)}
+.t td{padding:10px 14px;border-bottom:1px solid #f3f0fb;vertical-align:middle}
+.t tr:last-child td{border-bottom:none}
+.t tr:hover td{background:#faf8ff}
+.t code{background:#f3f0fb;padding:2px 6px;border-radius:5px;font-size:11px;font-weight:700;font-family:monospace}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g63{display:grid;grid-template-columns:1.65fr 1fr;gap:18px}
+
+.rc{background:var(--white);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh);padding:16px;margin-bottom:14px;position:relative;overflow:hidden}
+.rc.active::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--green)}
+.rc.delayed::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--amber)}
+.rc.sched::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--blue)}
+.rc-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.rc-name{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:var(--text)}
+.rc-dir{font-size:11.5px;color:var(--muted);margin-top:2px}
+.rc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.rc-stat label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;display:block;margin-bottom:2px}
+.rc-stat span{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:var(--text)}
+.pb{height:4px;background:#f0ecfa;border-radius:99px;overflow:hidden}
+.pf-g{background:linear-gradient(90deg,var(--green),#4ade80)}
+.pf-a{background:linear-gradient(90deg,var(--amber),#fbbf24)}
+.pf-b{background:linear-gradient(90deg,var(--blue),#60a5fa)}
+.rc-actions{display:flex;gap:7px;margin-top:10px}
+
+.li{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid var(--border)}
+.li:last-child{border-bottom:none}
+.li-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+
+.dmg{border:1.5px solid var(--border);border-radius:9px;padding:13px;margin-bottom:11px}
+.dmg:last-child{margin-bottom:0}
+.dmg.new{border-color:#fcd34d;background:#fffbeb}
+.dmg-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.dmg-title{font-size:13px;font-weight:700;color:var(--text)}
+.dmg-sub{font-size:12px;color:var(--muted);line-height:1.4}
+.dmg-acts{display:flex;gap:6px;margin-top:9px}
+
+.alert{padding:10px 14px;border-radius:9px;font-size:12.5px;display:flex;align-items:center;gap:8px;font-weight:500;margin-bottom:18px}
+.alert-amber{background:var(--amber-bg);color:#92600a;border:1px solid #fcd34d}
+
+@media(max-width:1200px){.stats{grid-template-columns:repeat(3,1fr)}.g2,.g63{grid-template-columns:1fr}}
+@media(max-width:768px){
+  .sb{position:fixed;top:0;bottom:0;left:0;transform:translateX(-100%);z-index:999;transition:transform .3s ease;}
+  .content{padding:14px}
+  .hamburger-btn{display:flex}
+}
+</style>
+</head>
+<body>
+
+<input type="checkbox" id="mobile-nav-toggle" style="display:none">
+<label for="mobile-nav-toggle" class="mobile-overlay"></label>
+
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-mark">
+      <img src="uway-logo.png" alt="UWAY" style="width:100%; height:100%; border-radius:9px; object-fit:cover;">
+    </div>
+    <div><div class="sb-name">UWAY</div><div class="sb-sub">Admin</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av">AD</div>
+    <div><div class="sb-uname">Transport Manager</div><div class="sb-role">University of Sharjah</div></div>
+  </div>
+  <nav class="sb-nav">
+    <ul>
+      <li><a href="#" class="active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a></li>
+    </ul>
+    <div class="sb-nav-section">Trip Management</div>
+    <ul>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Create Trip
+      </a></li>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Manage Trips
+      </a></li>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V6z"/><path d="M4 11h16"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/><path d="M6 20v2"/><path d="M18 20v2"/></svg>
+        Assign Bus &amp; Driver
+      </a></li>
+    </ul>
+    <div class="sb-nav-section">Damage Reports</div>
+    <ul>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Review Reports <span class="nb">2</span>
+      </a></li>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        Mark Seat Unavailable
+      </a></li>
+    </ul>
+    <div class="sb-nav-section">Management</div>
+    <ul>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Passengers
+      </a></li>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Reports
+      </a></li>
+    </ul>
+  </nav>
+  <div class="sb-footer">
+    <a href="driver.html" class="sb-logout">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Log out
+    </a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label for="mobile-nav-toggle" class="hamburger-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </label>
+      <div class="topbar-title">Admin Dashboard</div>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><span class="live-dot"></span> 3 Active Trips</div>
+      <button class="btn btn-primary btn-sm">+ Create Trip</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="alert alert-amber">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <strong>Delay:</strong> King Faisal 4:30 PM trip delayed 15 min. 38 students notified.
+    </div>
+
+    <div class="stats">
+      <div class="sc"><div class="sc-ic" style="background:var(--purple-xs)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V6z"/><path d="M4 11h16"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/><path d="M6 20v2"/><path d="M18 20v2"/></svg></div><div class="sc-v">6</div><div class="sc-l">Total Buses</div><div class="sc-n up">3 on road</div></div>
+      <div class="sc"><div class="sc-ic" style="background:var(--blue-bg)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div class="sc-v">128</div><div class="sc-l">Today's Reservations</div><div class="sc-n up">↑ 8% vs yesterday</div></div>
+      <div class="sc"><div class="sc-ic" style="background:var(--amber-bg)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="sc-v">2</div><div class="sc-l">Damage Reports</div><div class="sc-n warn">Awaiting review</div></div>
+    </div>
+
+    <div class="g63" style="margin-bottom:0">
+      <div>
+        <div class="rc active">
+          <div class="rc-hd"><div><div class="rc-name">Al Heera</div><div class="rc-dir">→ To University</div></div><span class="pill pill-green">On Route</span></div>
+          <div class="rc-row"><div class="rc-stat"><label>Bus</label><span>BUS-03</span></div><div class="rc-stat"><label>Aboard</label><span>28/45</span></div><div class="rc-stat"><label>ETA</label><span>7:48 AM</span></div></div>
+          <div class="pb"><div class="pf-g" style="height:4px;width:65%;border-radius:99px"></div></div>
+          <div class="rc-actions"><button class="btn btn-outline btn-sm">Track</button><button class="btn btn-red btn-sm">Cancel</button><button class="btn btn-amber btn-sm">Alert</button></div>
+        </div>
+        <div class="rc sched">
+          <div class="rc-hd"><div><div class="rc-name">Al Heera</div><div class="rc-dir">← From University</div></div><span class="pill pill-blue">Scheduled</span></div>
+          <div class="rc-row"><div class="rc-stat"><label>Bus</label><span>BUS-03</span></div><div class="rc-stat"><label>Reserved</label><span>32/45</span></div><div class="rc-stat"><label>Departs</label><span>12:30 PM</span></div></div>
+          <div class="pb"><div class="pf-b" style="height:4px;width:0%;border-radius:99px"></div></div>
+          <div class="rc-actions"><button class="btn btn-outline btn-sm">Edit</button><button class="btn btn-red btn-sm">Delete</button></div>
+        </div>
+        <div class="rc active">
+          <div class="rc-hd"><div><div class="rc-name">King Faisal</div><div class="rc-dir">→ To University</div></div><span class="pill pill-green">On Route</span></div>
+          <div class="rc-row"><div class="rc-stat"><label>Bus</label><span>BUS-07</span></div><div class="rc-stat"><label>Aboard</label><span>41/45</span></div><div class="rc-stat"><label>ETA</label><span>7:52 AM</span></div></div>
+          <div class="pb"><div class="pf-g" style="height:4px;width:82%;border-radius:99px"></div></div>
+          <div class="rc-actions"><button class="btn btn-outline btn-sm">Track</button><button class="btn btn-red btn-sm">Cancel</button><button class="btn btn-amber btn-sm">Alert</button></div>
+        </div>
+        <div class="rc delayed" style="margin-bottom:0">
+          <div class="rc-hd"><div><div class="rc-name">King Faisal</div><div class="rc-dir">← From University</div></div><span class="pill pill-amber">Delayed +15m</span></div>
+          <div class="rc-row"><div class="rc-stat"><label>Bus</label><span>BUS-07</span></div><div class="rc-stat"><label>Reserved</label><span>38/45</span></div><div class="rc-stat"><label>Departs</label><span>4:45 PM</span></div></div>
+          <div class="pb"><div class="pf-a" style="height:4px;width:10%;border-radius:99px"></div></div>
+          <div class="rc-actions"><button class="btn btn-outline btn-sm">Edit</button><button class="btn btn-gold btn-sm">Resend Alert</button><button class="btn btn-red btn-sm">Delete</button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Create New Trip</div></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="fg"><label class="fl">Route</label><select class="fs"><option>Al Heera</option><option>King Faisal</option></select></div>
+                <div class="fg"><label class="fl">Direction</label><select class="fs"><option>→ To University</option><option>← From University</option></select></div>
+                <div class="fg"><label class="fl">Date</label><input type="date" class="fi" value="2026-04-18"></div>
+                <div class="fg"><label class="fl">Time</label><input type="time" class="fi" value="07:00"></div>
+              </div>
+              <div class="fg"><label class="fl">Assign Bus</label><select class="fs"><option>BUS-03</option><option>BUS-05</option><option>BUS-07</option><option>BUS-09</option></select></div>
+              <div class="fg"><label class="fl">Assign Driver</label><select class="fs"><option>Mohammed Al-Rashid</option><option>Ahmad Khalil</option><option>Omar Al-Sayed</option><option>Salim Al-Otebi</option></select></div>
+              <div class="fg"><label class="fl">Capacity</label><input type="number" class="fi" value="45" min="1" max="60"></div>
+              <button class="btn btn-primary" style="width:100%">Create Trip</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0">
+          <div class="card-hd"><div class="card-title">Reassign Bus / Driver</div></div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <div class="fg"><label class="fl">Trip</label><select class="fs"><option>TR-4403 · Al Heera ← 12:30</option><option>TR-4404 · King Faisal ← 2:00</option><option>TR-4406 · King Faisal ← 4:45</option></select></div>
+              <div class="fg"><label class="fl">Bus</label><select class="fs"><option>Keep: BUS-03</option><option>BUS-05 — Standby</option><option>BUS-09 — Reserve</option></select></div>
+              <div class="fg"><label class="fl">Driver</label><select class="fs"><option>Keep: Mohammed Al-Rashid</option><option>Omar Al-Sayed</option><option>Salim Al-Otebi</option></select></div>
+              <div class="fg"><label class="fl">Capacity</label><input type="number" class="fi" value="45"></div>
+              <button class="btn btn-outline" style="width:100%">Apply Changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <div class="card-hd">
+        <div class="card-title">All Trips — Today</div>
+        <button class="btn btn-primary btn-sm">+ Create Trip</button>
+      </div>
+      <table class="t">
+        <thead><tr><th>ID</th><th>Route</th><th>Dir.</th><th>Time</th><th>Bus</th><th>Driver</th><th>Capacity</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr><td><code>TR-4401</code></td><td>Al Heera</td><td><span style="color:var(--green);font-weight:600;font-size:12px">→ Uni</span></td><td><strong>7:00 AM</strong></td><td>BUS-03</td><td>M. Rashid</td><td><span style="font-weight:700">28/45</span></td><td><span class="pill pill-green">On Route</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-xs">Track</button><button class="btn btn-red btn-xs">Cancel</button></div></td></tr>
+          <tr><td><code>TR-4402</code></td><td>King Faisal</td><td><span style="color:var(--green);font-weight:600;font-size:12px">→ Uni</span></td><td><strong>8:00 AM</strong></td><td>BUS-07</td><td>A. Khalil</td><td><span style="font-weight:700">41/45</span></td><td><span class="pill pill-green">On Route</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-xs">Track</button><button class="btn btn-red btn-xs">Cancel</button></div></td></tr>
+          <tr><td><code>TR-4403</code></td><td>Al Heera</td><td><span style="color:var(--blue);font-weight:600;font-size:12px">← Uni</span></td><td><strong>12:30 PM</strong></td><td>BUS-03</td><td>M. Rashid</td><td><span style="font-weight:700">32/45</span></td><td><span class="pill pill-blue">Scheduled</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-outline btn-xs">Edit</button><button class="btn btn-red btn-xs">Delete</button></div></td></tr>
+          <tr><td><code>TR-4404</code></td><td>King Faisal</td><td><span style="color:var(--blue);font-weight:600;font-size:12px">← Uni</span></td><td><strong>2:00 PM</strong></td><td>BUS-05</td><td>O. Sayed</td><td><span style="font-weight:700">18/45</span></td><td><span class="pill pill-blue">Scheduled</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-outline btn-xs">Edit</button><button class="btn btn-red btn-xs">Delete</button></div></td></tr>
+          <tr><td><code>TR-4405</code></td><td>Al Heera</td><td><span style="color:var(--blue);font-weight:600;font-size:12px">← Uni</span></td><td><strong>4:30 PM</strong></td><td>BUS-09</td><td>S. Otebi</td><td><span style="font-weight:700">22/45</span></td><td><span class="pill pill-blue">Scheduled</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-outline btn-xs">Edit</button><button class="btn btn-red btn-xs">Delete</button></div></td></tr>
+          <tr><td><code style="background:var(--amber-bg);color:var(--amber)">TR-4406</code></td><td>King Faisal</td><td><span style="color:var(--blue);font-weight:600;font-size:12px">← Uni</span></td><td><strong>4:45 PM</strong></td><td>BUS-07</td><td>A. Khalil</td><td><span style="font-weight:700">38/45</span></td><td><span class="pill pill-amber">Delayed +15m</span></td><td><div style="display:flex;gap:4px"><button class="btn btn-outline btn-xs">Edit</button><button class="btn btn-gold btn-xs">Alert</button></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="g2" style="margin-bottom:0">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-hd"><div class="card-title">Review Damage Reports</div><span class="pill pill-amber">2 pending</span></div>
+        <div class="card-body" style="padding-top:14px">
+          <div class="dmg new">
+            <div class="dmg-hd"><div><div class="dmg-title">Bus BUS-07 — Seatbelt Detached</div><div class="dmg-sub">Sara Al-Harbi · Trip TR-4402 · Apr 15<br>"Buckle completely detached, couldn't secure."</div></div><span class="pill pill-amber">New</span></div>
+            <div class="dmg-acts"><button class="btn btn-amber btn-sm">Mark Seat Unavailable</button><button class="btn btn-green btn-sm">Resolve</button></div>
+          </div>
+          <div class="dmg new">
+            <div class="dmg-hd"><div><div class="dmg-title">Bus BUS-03 — Torn Seat Cushion</div><div class="dmg-sub">Khalid Nasser · Trip TR-4401 · Apr 16<br>"Large tear on back rest, sharp edge exposed."</div></div><span class="pill pill-amber">New</span></div>
+            <div class="dmg-acts"><button class="btn btn-amber btn-sm">Mark Seat Unavailable</button><button class="btn btn-green btn-sm">Resolve</button></div>
+          </div>
+          <div class="dmg" style="opacity:.6">
+            <div class="dmg-hd"><div><div class="dmg-title">Bus BUS-05 — Broken Armrest</div><div class="dmg-sub">Nour Al-Amin · Trip TR-4390 · Apr 10 · Repair scheduled.</div></div><span class="pill pill-grey">Resolved</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:0">
+        <div class="card-hd"><div class="card-title">Mark Seat Unavailable</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <div class="fg"><label class="fl">Bus</label><select class="fs"><option>BUS-07 — King Faisal</option><option>BUS-03 — Al Heera</option><option>BUS-05</option></select></div>
+            <div class="fg"><label class="fl">Reason</label><select class="fs"><option>Damage Report</option><option>Maintenance</option><option>Other</option></select></div>
+            <div class="fg"><label class="fl">Notes</label><textarea class="fi" style="resize:vertical;height:60px;line-height:1.5" placeholder="e.g. Seatbelt detached — pending repair..."></textarea></div>
+            <button class="btn btn-amber" style="width:100%">Confirm Mark Unavailable</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

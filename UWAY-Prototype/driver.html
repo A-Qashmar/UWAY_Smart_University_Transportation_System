@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UWAY — Driver</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0edf8;--white:#fff;--border:#e8e2f5;
+  --purple:#5a26a8;--purple-d:#421a7d;--purple-s:#6d3ad2;--purple-xs:#f0eafb;
+  --gold:#c9a84c;--gold-l:#e8d28a;
+  --text:#1a1230;--muted:#8b80a8;
+  --green:#16a34a;--green-bg:#dcfce7;
+  --red:#dc2626;--red-bg:#fee2e2;
+  --amber:#d97706;--amber-bg:#fef3c7;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --sidebar:#0d2a1a;--sidebar-d:#061208;
+  --r:10px;--sh:0 1px 8px rgba(0,0,0,.09)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;overflow-x:hidden}
+
+/* MOBILE NAV OVERLAY */
+.mobile-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:998; opacity:0; pointer-events:none; transition:.3s; }
+#mobile-nav-toggle:checked ~ .mobile-overlay { opacity:1; pointer-events:auto; }
+#mobile-nav-toggle:checked ~ .sb { transform:translateX(0); }
+.hamburger-btn { display:none; align-items:center; justify-content:center; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--white); cursor:pointer; color:var(--text); transition:.15s; flex-shrink:0; }
+.hamburger-btn:hover { background:var(--bg); }
+
+.sb{width:220px;background:linear-gradient(175deg,var(--sidebar) 0%,var(--sidebar-d) 100%);display:flex;flex-direction:column;flex-shrink:0;height:100vh;position:sticky;top:0}
+.sb-brand{padding:22px 18px 18px;border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px}
+.sb-mark{width:36px;height:36px;background:linear-gradient(135deg,#16a34a,#4ade80);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-name{font-family:'Outfit',sans-serif;font-weight:900;font-size:20px;letter-spacing:3px;background:linear-gradient(120deg,var(--gold),var(--gold-l));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-sub{font-size:9.5px;color:rgba(255,255,255,.28);letter-spacing:1.5px;text-transform:uppercase}
+
+.sb-user{margin:14px 16px;padding:12px 13px;background:rgba(22,163,74,.09);border:1px solid rgba(22,163,74,.2);border-radius:10px}
+.sb-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#4ade80);display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:900;font-size:15px;color:#fff;margin-bottom:8px}
+.sb-uname{font-size:13px;font-weight:700;color:#fff;line-height:1.2}
+.sb-meta{font-size:11px;color:rgba(255,255,255,.38);margin-top:2px}
+.sb-status{display:inline-flex;align-items:center;gap:5px;background:rgba(22,163,74,.18);border:1px solid rgba(22,163,74,.28);padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;color:#4ade80;margin-top:8px}
+.sb-status-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.sb-nav{padding:8px 12px;flex:1;overflow-y:auto}
+.sb-nav-section{font-size:9.5px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);padding:0 8px;margin:14px 0 5px;font-weight:700}
+.sb-nav ul{list-style:none}
+.sb-nav li{margin-bottom:1px}
+.sb-nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;color:rgba(255,255,255,.45);font-size:13px;font-weight:500;transition:.15s;text-decoration:none}
+.sb-nav a:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85)}
+.sb-nav a.active{background:linear-gradient(115deg,#16a34a,#4ade80);color:#052010;font-weight:700}
+.sb-nav a svg{flex-shrink:0;opacity:.7}
+.sb-nav a.active svg{opacity:1}
+.nb{margin-left:auto;background:var(--amber);color:#fff;font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700;line-height:1.4}
+
+.sb-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.06)}
+.sb-logout{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;color:rgba(255,255,255,.35);font-size:13px;cursor:pointer;transition:.15s;text-decoration:none}
+.sb-logout:hover{background:rgba(255,255,255,.07);color:rgba(255,255,255,.7)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--white);height:58px;padding:0 26px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0;position:sticky;top:0;z-index:10}
+.topbar-title{font-family:'Outfit',sans-serif;font-size:17px;font-weight:700;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:11px;font-size:12.5px;color:var(--muted)}
+.content{flex:1;padding:22px 26px 36px}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s;white-space:nowrap}
+.btn-green{background:linear-gradient(120deg,#16a34a,#22c55e);color:#fff}
+.btn-green:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(22,163,74,.3)}
+.btn-outline-green{background:transparent;color:var(--green);border:1.5px solid var(--green)}
+.btn-outline-green:hover{background:var(--green-bg)}
+.btn-primary{background:linear-gradient(120deg,var(--purple-d),var(--purple-s));color:#fff}
+.btn-ghost{background:transparent;color:var(--muted);border:1.5px solid var(--border)}
+.btn-ghost:hover{color:var(--purple);border-color:var(--purple)}
+.btn-red{background:var(--red-bg);color:var(--red);border:1.5px solid #fca5a5}
+.btn-red:hover{background:var(--red);color:#fff}
+.btn-amber{background:var(--amber-bg);color:var(--amber);border:1.5px solid #fcd34d}
+.btn-sm{padding:5px 12px;font-size:12px}
+
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);overflow:hidden;margin-bottom:18px}
+.card-hd{padding:14px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:10px}
+.card-title{font-family:'Outfit',sans-serif;font-weight:700;font-size:14px;color:var(--text)}
+.card-body{padding:16px 18px}
+
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.pill::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;display:block}
+.pill-green{background:var(--green-bg);color:var(--green)}
+.pill-amber{background:var(--amber-bg);color:var(--amber)}
+.pill-red{background:var(--red-bg);color:var(--red)}
+.pill-purple{background:var(--purple-xs);color:var(--purple)}
+.pill-grey{background:#f0ecfa;color:var(--muted)}
+.pill-teal{background:#ecfeff;color:#0891b2}
+
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.fi,.fs{padding:8px 11px;border:1.5px solid var(--border);border-radius:7px;font-size:13px;font-family:'Inter',sans-serif;outline:none;color:var(--text);transition:.15s;background:var(--white)}
+.fi:focus,.fs:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,163,74,.1)}
+
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--sh);border:1px solid var(--border)}
+.sc-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.sc-v{font-family:'Outfit',sans-serif;font-size:26px;font-weight:900;color:var(--text);line-height:1}
+.sc-l{font-size:11px;color:var(--muted);margin-top:3px}
+
+.th{background:linear-gradient(135deg,#052010 0%,#0a3020 60%,#0d4a2c 100%);border-radius:var(--r);padding:20px 22px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.th::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;background:radial-gradient(circle,rgba(74,222,128,.13) 0%,transparent 65%);pointer-events:none}
+.th-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.28);padding:3px 11px;border-radius:999px;font-size:11.5px;font-weight:700;color:#4ade80;margin-bottom:12px}
+.th-dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:blink 1.5s infinite}
+.th-header{display:flex;justify-content:space-between;align-items:flex-start}
+.th-route{font-family:'Outfit',sans-serif;font-size:22px;font-weight:900;margin-bottom:4px}
+.th-sub{font-size:12px;color:rgba(255,255,255,.42);display:flex;flex-wrap:wrap;gap:8px}
+.th-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px;position:relative;z-index:1}
+.th-item label{font-size:9.5px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;font-weight:700;display:block;margin-bottom:3px}
+.th-item span{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800}
+.pb{height:5px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden}
+.pf{height:100%;border-radius:99px;background:linear-gradient(90deg,#16a34a,#4ade80)}
+.pb-labels{display:flex;justify-content:space-between;font-size:10.5px;color:rgba(255,255,255,.3);margin-bottom:5px;margin-top:12px}
+.th-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;position:relative;z-index:1}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.g63{display:grid;grid-template-columns:1.65fr 1fr;gap:18px}
+
+/* stop list */
+.stop-item{display:flex;align-items:center;gap:12px;padding:9px 0;position:relative}
+.stop-conn{position:absolute;left:13px;top:34px;bottom:-9px;width:2px;background:var(--border);z-index:0}
+.stop-item:last-child .stop-conn{display:none}
+.stop-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;position:relative;z-index:1;font-family:'Outfit',sans-serif}
+.sd-done{background:var(--green);color:#fff}
+.sd-active{background:var(--purple);color:#fff;box-shadow:0 0 0 4px rgba(90,38,168,.15)}
+.sd-next{background:#f3f0fb;color:var(--muted);border:2px solid var(--border)}
+.stop-name{font-size:13px;font-weight:700;color:var(--text)}
+.stop-sub{font-size:11.5px;color:var(--muted);margin-top:1px}
+.stop-time{text-align:right;font-family:'Outfit',sans-serif;font-size:13px;font-weight:800;color:var(--text);flex-shrink:0;min-width:58px}
+.stop-time span{display:block;font-size:10.5px;font-weight:400;color:var(--muted);margin-top:1px}
+
+/* passenger list */
+.pax-item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.pax-item:last-child{border-bottom:none}
+.pax-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.pax-priority{font-family:'Outfit',sans-serif;font-size:15px;font-weight:900;color:var(--purple);margin-left:auto;flex-shrink:0}
+
+/* schedule */
+.sched-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.sched-item:last-child{border-bottom:none}
+.sched-ic{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sched-time{font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;color:var(--text)}
+.sched-detail{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* notif */
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-ic{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-title{font-size:13px;font-weight:700;color:var(--text)}
+.notif-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.notif-time{font-size:11px;color:var(--muted);margin-top:3px}
+
+@media(max-width:1100px){.stats{grid-template-columns:1fr 1fr}.g2,.g63{grid-template-columns:1fr}.th-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){
+  .sb{position:fixed;top:0;bottom:0;left:0;transform:translateX(-100%);z-index:999;transition:transform .3s ease;}
+  .content{padding:14px}
+  .hamburger-btn{display:flex}
+}
+</style>
+</head>
+<body>
+
+<input type="checkbox" id="mobile-nav-toggle" style="display:none">
+<label for="mobile-nav-toggle" class="mobile-overlay"></label>
+
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-mark">
+      <img src="uway-logo.png" alt="UWAY" style="width:100%; height:100%; border-radius:9px; object-fit:cover;">
+    </div>
+    <div><div class="sb-name">UWAY</div><div class="sb-sub">Driver</div></div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av">MR</div>
+    <div class="sb-uname">Mohammed Al-Rashid</div>
+    <div class="sb-meta">DRV-001 · Bus BUS-03 · Al Heera</div>
+    <div class="sb-status"><span class="sb-status-dot"></span> On Duty</div>
+  </div>
+  <nav class="sb-nav">
+    <ul>
+      <li><a href="#" class="active">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Dashboard
+      </a></li>
+    </ul>
+    <div class="sb-nav-section">My Trip</div>
+    <ul>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V6z"/><path d="M4 11h16"/><line x1="8" y1="15" x2="8.01" y2="15"/><line x1="16" y1="15" x2="16.01" y2="15"/><path d="M6 20v2"/><path d="M18 20v2"/></svg>
+        Assigned Trip
+      </a></li>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Stop Navigator
+      </a></li>
+    </ul>
+    <div class="sb-nav-section">Boarding</div>
+    <ul>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Check Capacity
+      </a></li>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Passenger List
+      </a></li>
+    </ul>
+    <div class="sb-nav-section">Reports</div>
+    <ul>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Report Incident
+      </a></li>
+      <li><a href="#">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notifications <span class="nb">2</span>
+      </a></li>
+    </ul>
+  </nav>
+  <div class="sb-footer">
+    <a href="admin.html" class="sb-logout">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Log out
+    </a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <label for="mobile-nav-toggle" class="hamburger-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </label>
+      <div class="topbar-title">Driver Cockpit — Mohammed</div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-red btn-sm">End Shift</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="th">
+      <div class="th-header">
+        <div class="th-badge"><span class="th-dot"></span> Live Trip</div>
+        <div style="font-size:11.5px;color:rgba(255,255,255,.3);font-weight:600">Trip #TR-4401 · Bus BUS-03</div>
+      </div>
+      <div class="th-route">Al Heera → University</div>
+      <div class="th-sub">
+        <span>Bus BUS-03 · Plate: SHJ-4892-B</span>
+        <span style="opacity:.25">·</span>
+        <span>Route: Al Heera</span>
+      </div>
+      <div class="th-grid">
+        <div class="th-item"><label>Aboard</label><span>28 / 45</span></div>
+        <div class="th-item"><label>Stop</label><span>4 of 6</span></div>
+        <div class="th-item"><label>Capacity</label><span style="color:#4ade80">✓ OK</span></div>
+      </div>
+      <div class="pb-labels"><span>Al Heera Terminal</span><span>65%</span><span>University Gate</span></div>
+      <div class="pb"><div class="pf" style="width:65%"></div></div>
+      <div class="th-actions">
+        <button class="btn btn-green">Confirm Stop Reached</button>
+        <button class="btn btn-outline-green">Message Admin</button>
+        <button class="btn btn-amber btn-sm">Report Issue</button>
+        <button class="btn btn-red btn-sm" style="margin-left:auto">End Trip</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="sc"><div class="sc-ic" style="background:var(--green-bg)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="sc-v">3</div><div class="sc-l">Trips Today</div></div>
+      <div class="sc"><div class="sc-ic" style="background:#f0ecfa"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="sc-v">28</div><div class="sc-l">Aboard Now</div></div>
+    </div>
+
+    <div class="g63" style="margin-bottom:0">
+      <div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Stop Navigator</div><span class="pill pill-green">Live</span></div>
+          <div class="card-body" style="padding-top:10px">
+            <div>
+              <div class="stop-item"><div class="stop-conn"></div><div class="stop-dot sd-done">✓</div><div style="flex:1"><div class="stop-name">Al Heera Terminal</div><div class="stop-sub">18 passengers boarded</div></div><div class="stop-time"><span>Done ✓</span></div></div>
+              <div class="stop-item"><div class="stop-conn"></div><div class="stop-dot sd-done">✓</div><div style="flex:1"><div class="stop-name">Al Heera Roundabout</div><div class="stop-sub">4 passengers boarded</div></div><div class="stop-time"><span>Done ✓</span></div></div>
+              <div class="stop-item"><div class="stop-conn"></div><div class="stop-dot sd-done">✓</div><div style="flex:1"><div class="stop-name">Al Corniche Bridge</div><div class="stop-sub">3 passengers boarded</div></div><div class="stop-time"><span>Done ✓</span></div></div>
+              <div class="stop-item"><div class="stop-conn"></div><div class="stop-dot sd-active">4</div><div style="flex:1"><div class="stop-name" style="color:var(--purple)">University Avenue</div><div class="stop-sub" style="color:var(--purple)">Current stop · 3 boarding now</div></div><div class="stop-time" style="color:var(--purple)"><span>Now</span></div></div>
+              <div class="stop-item"><div class="stop-conn"></div><div class="stop-dot sd-next">5</div><div style="flex:1"><div class="stop-name" style="color:var(--muted)">Faculty of Engineering</div><div class="stop-sub">0 waiting</div></div><div class="stop-time" style="color:var(--muted)"><span>Next</span></div></div>
+              <div class="stop-item"><div class="stop-dot sd-next">6</div><div style="flex:1"><div class="stop-name" style="color:var(--muted)">University Main Gate</div><div class="stop-sub">Final · 28 to disembark</div></div><div class="stop-time" style="color:var(--muted)"></div></div>
+            </div>
+            <button class="btn btn-green" style="width:100%;margin-top:14px">Confirm Stop 4 Reached</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0">
+          <div class="card-hd">
+            <div class="card-title">Passenger List</div>
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:900;color:var(--green)">28<span style="font-size:12px;font-weight:500;color:var(--muted)">/45</span></span>
+              <button class="btn btn-ghost btn-sm">Full List</button>
+            </div>
+          </div>
+          <div style="padding:2px 18px">
+            <div class="pax-item">
+              <div class="pax-av" style="background:linear-gradient(135deg,#9333ea,#c026d3)">SA</div>
+              <div style="flex:1"><div style="font-size:13px;font-weight:700">Sara Al-Harbi</div><div style="font-size:11.5px;color:var(--muted)">U2220508 · Stop 1</div></div>
+              <div class="pax-priority">#3</div>
+              <span class="pill pill-green" style="font-size:10.5px">On Board</span>
+            </div>
+            <div class="pax-item">
+              <div class="pax-av" style="background:linear-gradient(135deg,#2563eb,#3b82f6)">KN</div>
+              <div style="flex:1"><div style="font-size:13px;font-weight:700">Khalid Nasser</div><div style="font-size:11.5px;color:var(--muted)">U2401234 · Stop 1</div></div>
+              <div class="pax-priority">#8</div>
+              <span class="pill pill-green" style="font-size:10.5px">On Board</span>
+            </div>
+            <div class="pax-item">
+              <div class="pax-av" style="background:linear-gradient(135deg,#16a34a,#22c55e)">LJ</div>
+              <div style="flex:1"><div style="font-size:13px;font-weight:700">Lina Jabir</div><div style="font-size:11.5px;color:var(--muted)">U2512345 · Stop 2</div></div>
+              <div class="pax-priority">#12</div>
+              <span class="pill pill-green" style="font-size:10.5px">On Board</span>
+            </div>
+            <div class="pax-item">
+              <div class="pax-av" style="background:linear-gradient(135deg,#d97706,#f59e0b)">RM</div>
+              <div style="flex:1"><div style="font-size:13px;font-weight:700">Rashed Al-Mansoori</div><div style="font-size:11.5px;color:var(--muted)">U2108888 · Stop 1</div></div>
+              <div class="pax-priority">#5</div>
+              <span class="pill pill-green" style="font-size:10.5px">On Board</span>
+            </div>
+            <div class="pax-item" style="border-bottom:none">
+              <div class="pax-av" style="background:linear-gradient(135deg,#a78bfa,#7c3aed)">YA</div>
+              <div style="flex:1"><div style="font-size:13px;font-weight:700">Yousef Al-Ahmad</div><div style="font-size:11.5px;color:var(--muted)">U2510999 · Stop 4</div></div>
+              <div class="pax-priority">#21</div>
+              <span class="pill pill-teal" style="font-size:10.5px">Boarding</span>
+            </div>
+          </div>
+          <div style="padding:10px 18px 14px;font-size:12px;color:var(--muted);text-align:center">+ 23 more passengers</div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:18px">
+
+        <div class="card" style="margin-bottom:0">
+          <div class="card-hd"><div class="card-title">Live Capacity &amp; Boarding</div><span class="pill pill-green">OK</span></div>
+          <div class="card-body">
+            <div style="font-size:12.5px;color:var(--muted);margin-bottom:11px;text-align:center;">
+              * Boarding is handled automatically by the system.
+            </div>
+            <div style="background:var(--green-bg);border-radius:8px;padding:14px;text-align:center;border:1px solid #86efac;margin-bottom:12px">
+              <div style="font-family:'Outfit',sans-serif;font-size:40px;font-weight:900;color:var(--green);line-height:1">28<span style="font-size:18px;font-weight:500;color:var(--muted)">/45</span></div>
+              <div style="font-size:12.5px;color:var(--green);font-weight:600;margin-top:4px">Boarding Allowed</div>
+              <div style="height:8px;background:#b7e6d0;border-radius:99px;overflow:hidden;margin-top:10px"><div style="width:62%;height:100%;background:linear-gradient(90deg,var(--green),#4ade80);border-radius:99px"></div></div>
+            </div>
+            <div style="background:var(--amber-bg);border-radius:7px;padding:9px 11px;font-size:12px;color:var(--amber);font-weight:600;border:1px solid #fcd34d;text-align:center;">
+              ⚠️ System will block passengers if capacity is full.
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0">
+          <div class="card-hd"><div class="card-title">My Schedule Today</div></div>
+          <div style="padding:2px 18px">
+            <div class="sched-item">
+              <div class="sched-ic" style="background:var(--green-bg)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div style="flex:1"><div class="sched-time" style="color:var(--green)">Active</div><div class="sched-detail">Al Heera → University</div></div>
+              <span class="pill pill-green">Active</span>
+            </div>
+            <div class="sched-item">
+              <div class="sched-ic" style="background:var(--amber-bg)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div style="flex:1"><div class="sched-time">Next Trip</div><div class="sched-detail">University → Al Heera</div></div>
+              <span class="pill pill-amber">Upcoming</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:0">
+          <div class="card-hd"><div class="card-title">Admin Messages</div><span class="pill pill-amber">2 new</span></div>
+          <div style="padding:2px 18px">
+            <div class="notif-item">
+              <div class="notif-ic" style="background:var(--amber-bg)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div><div class="notif-title">Use Alternate Route</div><div class="notif-sub">Road closure on Corniche — use Al Wahda St.</div></div>
+            </div>
+            <div class="notif-item" style="border-bottom:none">
+              <div class="notif-ic" style="background:var(--green-bg)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div><div class="notif-title">Shift Confirmed</div><div class="notif-sub">3 trips confirmed for today. Safe drive!</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
